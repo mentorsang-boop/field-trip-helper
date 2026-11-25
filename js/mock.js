@@ -145,8 +145,8 @@ export const sb = {
   auth: {
     getSession: async () => ({ data: { session } }),
     onAuthStateChange(cb) { listeners.push(cb); setTimeout(() => cb('INITIAL_SESSION', session)); return { data: { subscription: { unsubscribe() {} } } }; },
-    async signInWithPassword({ email }) {
-      session = { access_token: 'demo', user: { id: 'demo', email } };
+    async setSession() {
+      session = { access_token: 'demo', user: { id: 'demo' } };
       ls.set('ft_demo_session', JSON.stringify(session)); notify('SIGNED_IN');
       return { error: null };
     },
@@ -200,6 +200,10 @@ function turn(s, photoId, list) {
 }
 
 const fns = {
+  'teacher-login'({ pin }) {
+    if (pin !== '0000') fail(401, '비밀번호가 맞지 않아요. (데모 비밀번호: 0000)');
+    return { access_token: 'demo', refresh_token: 'demo' };
+  },
   roster({ trip_id, cp_id }) {
     const t = trip(trip_id) ?? fail(404, '체험학습을 찾을 수 없어요. QR을 다시 찍어줘.');
     const cp = db.checkpoints.find((c) => c.id === cp_id && c.trip_id === trip_id);

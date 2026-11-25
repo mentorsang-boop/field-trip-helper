@@ -15,8 +15,11 @@ sb.auth.onAuthStateChange((_e, session) => {
 });
 $('login').onsubmit = async (e) => {
   e.preventDefault();
-  const { error } = await sb.auth.signInWithPassword({ email: $('email').value, password: $('pw').value });
-  $('login-err').textContent = error ? '이메일 또는 비밀번호를 확인해 주세요.' : '';
+  try {
+    const s = await callFn('teacher-login', { pin: $('pw').value });
+    const { error } = await sb.auth.setSession(s);
+    $('login-err').textContent = error ? '로그인하지 못했어요. 다시 해주세요.' : '';
+  } catch (err) { $('login-err').textContent = err.message; }
 };
 $('logout').onclick = () => sb.auth.signOut();
 

@@ -28,3 +28,6 @@ verify_jwt = false
 # 교사 함수는 함수 안에서 로그인 확인
 [functions.ft-qr-token]
 verify_jwt = false
+
+[functions.ft-teacher-login]
+verify_jwt = false
