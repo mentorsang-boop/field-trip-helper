@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>교사 화면 · 현장체험학습 도우미</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="teacher">
+
+  <!-- 로그인 -->
+  <form id="login" class="card" hidden style="max-width:380px;margin:10vh auto 0">
+    <h1>교사 로그인</h1>
+    <label>이메일<input id="email" type="email" autocomplete="username" required></label>
+    <label>비밀번호<input id="pw" type="password" autocomplete="current-password" required></label>
+    <button class="btn">로그인</button>
+    <p class="err" id="login-err"></p>
+  </form>
+
+  <div id="main" hidden>
+    <div class="bar">
+      <h1>현장체험학습 도우미 <span class="hint" id="ver"></span></h1>
+      <select id="trip-sel" aria-label="체험 선택"></select>
+      <button class="btn ghost small" id="new-trip">+ 새 체험</button>
+      <button class="btn ghost small" id="logout">로그아웃</button>
+    </div>
+    <div class="tabs" id="pages">
+      <button data-page="board" class="on">출결 현황</button>
+      <button data-page="roster">명단</button>
+      <button data-page="submit">제출 현황</button>
+      <button data-page="settings">체험 설정</button>
+    </div>
+
+    <!-- 제출 현황 + 마무리 -->
+    <section id="page-submit" class="card" style="margin-top:12px" hidden>
+      <div class="row">
+        <button class="btn small" id="sub-refresh">↻ 새로고침</button>
+        <button class="btn ghost small" id="print-all">전체 보고서 인쇄</button>
+        <button class="btn ghost small" id="csv">⬇ 출결·제출 CSV</button>
+      </div>
+      <p class="hint" id="sub-summary"></p>
+      <div class="scroll" id="sub-table"></div>
+    </section>
+    <section id="page-close" class="card" style="margin-top:12px" hidden>
+      <h2>체험 마무리</h2>
+      <p class="hint" id="open-state"></p>
+      <div class="row"><button class="btn small" id="open-toggle"></button></div>
+      <hr style="border:0;border-top:1px solid var(--line);width:100%">
+      <button class="btn danger small" id="del-1" style="align-self:flex-start">이 체험 데이터 전체 삭제</button>
+      <div id="del-box" class="missing" hidden>
+        <p>출결, 명단, 사진, 인터뷰, 보고서가 <b>모두 삭제되고 되돌릴 수 없어요.</b> 보고서를 먼저 인쇄하거나 CSV를 받아두세요.</p>
+        <div class="row" style="margin-top:8px">
+          <button class="btn danger small" id="del-2">정말 삭제</button>
+          <button class="btn ghost small" id="del-cancel">취소</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 출결 현황판 -->
+    <section id="page-board" class="card" style="margin-top:12px">
+      <div class="tabs" id="cp-tabs"></div>
+      <div class="row">
+        <button class="btn small" id="cp-toggle"></button>
+        <button class="btn ghost small" id="qr-open">QR 띄우기</button>
+      </div>
+      <div class="count" id="count"></div>
+      <div class="missing" id="missing"></div>
+      <p class="hint">초록 = 출석 · 빨강 = 미체크 · 노랑 = 반경 밖 · 이름을 누르면 수동 출석/기기 초기화</p>
+      <div id="board"></div>
+    </section>
+
+    <!-- 명단 -->
+    <section id="page-roster" class="card" style="margin-top:12px" hidden>
+      <h2>명단</h2>
+      <label class="drop" id="roster-drop">
+        <input type="file" id="roster-file" accept=".xlsx,.xls,.csv,.txt" hidden>
+        <b>엑셀 파일 올리기</b>
+        <span>누르거나 파일을 여기로 끌어다 놓으면 바로 등록돼요.<br>'반·번호·이름' 또는 '학번·이름' 열을 자동으로 찾아요. 이미 있는 이름은 건너뛰어요.</span>
+      </label>
+      <p id="roster-msg"></p>
+      <details>
+        <summary class="hint">엑셀 파일이 없으면: 복사해서 붙여넣기</summary>
+        <textarea id="roster-text" placeholder="반	번호	이름&#10;3-1	1	김가온&#10;3-1	2	박도윤" style="margin-top:8px"></textarea>
+        <button class="btn small" id="roster-add" style="margin-top:8px">붙여넣은 명단 등록</button>
+      </details>
+      <div id="roster-list"></div>
+      <button class="btn ghost small" id="roster-clear" style="align-self:flex-start">명단 전체 지우기</button>
+    </section>
+
+    <!-- 체험 설정 -->
+    <form id="page-settings" class="card" style="margin-top:12px" hidden>
+      <h2>체험 설정</h2>
+      <div class="form">
+        <label>제목<input name="title" required></label>
+        <label>장소<input name="place"></label>
+        <label>시작<input name="starts_at" type="datetime-local"></label>
+        <label>끝<input name="ends_at" type="datetime-local"></label>
+        <label>위도<input name="lat" type="number" step="any"></label>
+        <label>경도<input name="lng" type="number" step="any"></label>
+        <label>반경(m)<input name="radius_m" type="number" min="50" step="10"></label>
+      </div>
+      <div class="row">
+        <button type="button" class="btn ghost small" id="here">현재 위치로 설정</button>
+        <button class="btn small">저장</button>
+      </div>
+      <p id="settings-msg"></p>
+    </form>
+
+    <!-- 미션 카드 편집 (체험 설정 탭에 함께 보임) -->
+    <section id="page-missions" class="card" style="margin-top:12px" hidden>
+      <h2>미션 카드</h2>
+      <p class="hint">학생이 사진을 찍을 미션이에요. 이름·안내 문구를 바꾸거나, 지우거나, 추가할 수 있어요. 미션을 지우면 그 미션에 올린 사진도 지워져요.</p>
+      <div id="mission-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div class="row">
+        <button class="btn ghost small" id="mission-add">+ 미션 추가</button>
+        <button class="btn small" id="mission-save">미션 저장</button>
+      </div>
+      <p id="mission-msg"></p>
+    </section>
+  </div>
+</div>
+
+<!-- 학생 칸을 눌렀을 때 -->
+<dialog id="stu-dialog">
+  <h2 id="stu-name"></h2>
+  <p class="hint" id="stu-info"></p>
+  <div class="acts">
+    <button class="btn ok" id="stu-manual">수동 출석</button>
+    <button class="btn ghost" id="stu-undo">출석 취소</button>
+    <button class="btn danger" id="stu-reset">기기 초기화</button>
+    <button class="btn ghost" id="stu-close">닫기</button>
+  </div>
+</dialog>
+
+<!-- 전체 화면 QR -->
+<div id="qr-view" hidden>
+  <h1 id="qr-title" style="font-size:32px"></h1>
+  <canvas id="qr-canvas"></canvas>
+  <div class="gauge"><i id="qr-gauge"></i></div>
+  <p class="hint" id="qr-left"></p>
+  <a id="qr-link" hidden>데모: QR을 찍은 것처럼 학생 화면 열기</a>
+  <div class="row">
+    <button class="btn small" id="qr-toggle"></button>
+    <button class="btn ghost small" id="qr-close">닫기</button>
+  </div>
+</div>
+
+<script type="module" src="js/teacher.js"></script>
+</body>
+</html>

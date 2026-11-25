@@ -1,0 +1,30 @@
+project_id = "field-trip"
+
+# 학생 함수는 로그인 없이 anon 키로 호출하므로 JWT 검사를 끈다 (함수 안에서 device_id로 검증)
+[functions.ft-roster]
+verify_jwt = false
+
+[functions.ft-register-device]
+verify_jwt = false
+
+[functions.ft-checkin]
+verify_jwt = false
+
+[functions.ft-upload-url]
+verify_jwt = false
+
+[functions.ft-my-status]
+verify_jwt = false
+
+[functions.ft-interview]
+verify_jwt = false
+
+[functions.ft-make-report]
+verify_jwt = false
+
+[functions.ft-save-report]
+verify_jwt = false
+
+# 교사 함수는 함수 안에서 로그인 확인
+[functions.ft-qr-token]
+verify_jwt = false
